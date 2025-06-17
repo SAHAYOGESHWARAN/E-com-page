@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2223,10 +2222,44 @@
         div.appendChild(createElement('p', {html: `<strong>Order ID:</strong> ${order.id}`}));
         div.appendChild(createElement('p', {html: `<strong>Status:</strong> ${order.status}`}));
         div.appendChild(createElement('p', {html: `<strong>Total:</strong> ${formatPrice(order.total)}`}));
+        // Estimated delivery (simulate 5 days after order)
+        const estDelivery = new Date(order.createdAt);
+        estDelivery.setDate(estDelivery.getDate() + 5);
+        div.appendChild(createElement('p', {html: `<strong>Est. Delivery:</strong> ${estDelivery.toLocaleDateString()}`}));
+        // View details button
+        const btnDetails = createElement('button', {text: 'View Details', classes: 'btn-small', attrs: {type: 'button'}});
+        btnDetails.addEventListener('click', () => {
+          showOrderDetails(order);
+        });
+        div.appendChild(btnDetails);
+        // Reorder button
+        const btnReorder = createElement('button', {text: 'Reorder', classes: 'btn-small', attrs: {type: 'button', style: 'margin-left:8px;'}});
+        btnReorder.addEventListener('click', () => {
+          reorderOrder(order);
+        });
+        div.appendChild(btnReorder);
+        // Track order button
+        const btnTrack = createElement('button', {text: 'Track Order', classes: 'btn-small', attrs: {type: 'button', style: 'margin-left:8px;'}});
+        btnTrack.addEventListener('click', () => {
+          showOrderTracking(order);
+        });
+        div.appendChild(btnTrack);
         ordersSection.appendChild(div);
       });
     }
     modal.appendChild(ordersSection);
+
+    // Wishlist clear all button
+    if(currentUser.wishlist.length > 0) {
+      const clearBtn = createElement('button', {text: 'Clear Wishlist', classes: 'btn-small', attrs: {type: 'button', style: 'margin-top:8px;'}});
+      clearBtn.addEventListener('click', () => {
+        currentUser.wishlist = [];
+        localStorage.setItem('wishlist', JSON.stringify([]));
+        renderWishlist();
+        showAccountSection();
+      });
+      wishlistSection.appendChild(clearBtn);
+    }
 
     overlay.appendChild(modal);
     modalRoot.appendChild(overlay);
@@ -2245,6 +2278,102 @@
 
   init();
 
+  // Add helper functions for new features
+  function showOrderDetails(order) {
+    const modalRoot = document.getElementById('modal-root');
+    modalRoot.innerHTML = '';
+    const overlay = createElement('div', {classes:'modal-overlay'});
+    overlay.tabIndex = -1;
+    overlay.addEventListener('click', e => {
+      if(e.target === overlay) closeModal();
+    });
+    overlay.addEventListener('keydown', e => {
+      if(e.key === 'Escape') {
+        e.preventDefault();
+        closeModal();
+      }
+    });
+    const modal = createElement('section', {classes:'modal', attrs: {role:'dialog', 'aria-modal':'true', 'aria-labelledby':'order-detail-title'}});
+    const btnClose = createElement('button', {classes:'modal-close-btn', html: '<span class="material-icons" aria-hidden="true">close</span>', attrs: {'aria-label': 'Close order details'}});
+    btnClose.addEventListener('click', closeModal);
+    modal.appendChild(btnClose);
+    modal.appendChild(createElement('h2', {text: `Order Details`, attrs:{id:'order-detail-title'}, classes:'product-detail-name'}));
+    modal.appendChild(createElement('p', {html: `<strong>Order ID:</strong> ${order.id}`}));
+    modal.appendChild(createElement('p', {html: `<strong>Status:</strong> ${order.status}`}));
+    modal.appendChild(createElement('p', {html: `<strong>Total:</strong> ${formatPrice(order.total)}`}));
+    // Estimated delivery
+    const estDelivery = new Date(order.createdAt);
+    estDelivery.setDate(estDelivery.getDate() + 5);
+    modal.appendChild(createElement('p', {html: `<strong>Est. Delivery:</strong> ${estDelivery.toLocaleDateString()}`}));
+    // Shipping info
+    if(order.shipping) {
+      modal.appendChild(createElement('h3', {text: 'Shipping Info'}));
+      modal.appendChild(createElement('p', {text: `${order.shipping.name}, ${order.shipping.address}, ${order.shipping.country}, ${order.shipping.zip}`}));
+    }
+    // Items
+    modal.appendChild(createElement('h3', {text: 'Items'}));
+    const ul = createElement('ul');
+    order.items.forEach(item => {
+      const product = products.find(p => p.id === item.productId);
+      if(!product) return;
+      let text = `${product.name}`;
+      if(item.variantId) {
+        const variant = product.variants?.find(v => v.id === item.variantId);
+        if(variant) text += ` (${variant.name})`;
+      }
+      text += ` x${item.quantity} - ${formatPrice(item.price * item.quantity)}`;
+      ul.appendChild(createElement('li', {text}));
+    });
+    modal.appendChild(ul);
+    overlay.appendChild(modal);
+    modalRoot.appendChild(overlay);
+    btnClose.focus();
+  }
+
+  function reorderOrder(order) {
+    order.items.forEach(item => {
+      addToCart(item.productId, item.variantId, item.quantity);
+    });
+    showToast('Order items added to cart!');
+  }
+
+  function showOrderTracking(order) {
+    const modalRoot = document.getElementById('modal-root');
+    modalRoot.innerHTML = '';
+    const overlay = createElement('div', {classes:'modal-overlay'});
+    overlay.tabIndex = -1;
+    overlay.addEventListener('click', e => {
+      if(e.target === overlay) closeModal();
+    });
+    overlay.addEventListener('keydown', e => {
+      if(e.key === 'Escape') {
+        e.preventDefault();
+        closeModal();
+      }
+    });
+    const modal = createElement('section', {classes:'modal', attrs: {role:'dialog', 'aria-modal':'true', 'aria-labelledby':'order-track-title'}});
+    const btnClose = createElement('button', {classes:'modal-close-btn', html: '<span class="material-icons" aria-hidden="true">close</span>', attrs: {'aria-label': 'Close tracking'}});
+    btnClose.addEventListener('click', closeModal);
+    modal.appendChild(btnClose);
+    modal.appendChild(createElement('h2', {text: `Order Tracking`, attrs:{id:'order-track-title'}, classes:'product-detail-name'}));
+    // Tracking history (simulate)
+    const stages = ['Processing', 'Shipped', 'Out for Delivery', 'Delivered'];
+    const created = new Date(order.createdAt);
+    const now = new Date();
+    const ul = createElement('ul');
+    stages.forEach((stage, idx) => {
+      const li = createElement('li');
+      let date = new Date(created);
+      date.setDate(date.getDate() + idx);
+      li.textContent = `${stage} - ${date.toLocaleDateString()}${stage === order.status ? ' (current)' : ''}`;
+      if(stage === order.status) li.style.fontWeight = 'bold';
+      ul.appendChild(li);
+    });
+    modal.appendChild(ul);
+    overlay.appendChild(modal);
+    modalRoot.appendChild(overlay);
+    btnClose.focus();
+  }
 })();
 </script>
 </body>
