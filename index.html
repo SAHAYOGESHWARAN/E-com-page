@@ -1,49 +1,4 @@
 
-The request is to build a full modern e-commerce web application with a comprehensive shopping flow and many advanced features including product catalog, cart, checkout, user account management, wishlist, reviews, inventory and discounts. The UI should be premium and clean, following modern design guidelines, with a 3-column layout on desktop:
-- Left sidebar filters (300px)
-- Middle product grid (flex)
-- Right cart sidebar (350px)
-
-Functionality includes search with filters, sorting, pagination, cart quantity controls with real-time updates, complete checkout with validation, product detail page with image gallery and reviews, wishlist with sharing, rating system, inventory management, coupon system, shipping calculator, order tracking, recommendations, recently viewed products, etc. It must be fully responsive adapting from mobile (single panel) to tablet (two panels) to desktop (three panels).
-
-All UI must be very polished with smooth transitions, accessible, and must use Google Material Icons from the official Google CDN.
-
-Given the complexity and that no backend is requested, all data will be simulated or stored client-side (localStorage) with in-memory JS state.
-
-The best approach is to provide the entire app as a single self-contained HTML file with inline CSS (using modern CSS Grid and Flexbox) and JavaScript with modular code but all in one file as requested for frontend tasks.
-
-The complexity is high but I will provide a simplified but fully functional e-commerce SPA demo that covers all the requested major features and the required UI structure and wide functionality.
-
-Plan:
-- Use React or vanilla JS? Since no bundler or external dependency is mentioned, will use vanilla JS.
-- Use CSS Grid and Flexbox for layout with three panels on desktop, adapting on smaller widths.
-- Provide a header fixed on top with logo, search bar, nav, cart icon with count.
-- Left sidebar: categories, price range, rating filter, brand filter.
-- Middle: product grid with cards, sorting, pagination, quick view modal.
-- Right sidebar: cart with live updates, quantity controls, checkout preview.
-- Implement product detail modal with image gallery and reviews.
-- User account management: simulate login state; provide order history view.
-- Wishlist feature stored in localStorage.
-- Reviews with star ratings and comments.
-- Inventory and stock check disabling add to cart if out of stock.
-- Coupon code system with basic validation and discount application.
-- Shipping calculator with multiple options.
-- Order tracking simulation to show order status progression.
-- Product recommendations based on browsing history stored in session/local storage.
-- Recently viewed products shown in sidebar or below grid.
-- Implement animations and loading states for async actions.
-- Use material icons via Google's official stylesheet link.
-- Use https://placehold.co image placeholders with alt text for product images.
-- Use consistent color scheme with a white/light background and purple (#7c3aed) as highlight.
-- Breadth of features means some will be simplified but fully functional and extendable.
-
-Will deliver as a single HTML file at path: ecommerce-app.html
-
-Now I will build the complete file content.
-
-
-`ecommerce-app.html`
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
